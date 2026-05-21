@@ -1,12 +1,12 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مخزني - إدارة المنتجات والباركود المطور</title>
+<title>مخزني - إدارة المنتجات والباركود المستقر</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 
-<!-- استدعاء مكتبة مسح الباركود عبر الكاميرا -->
+<!-- استدعاء المكتبة الرسمية لمسح الباركود -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
@@ -114,10 +114,6 @@
     flex: 1; background: transparent; border: none; outline: none;
     color: var(--text); font-family: var(--font); font-size: 14px; padding: 11px 0;
   }
-  select.filter {
-    background: var(--surface); border: 1px solid var(--border);
-    color: var(--text); font-family: var(--font); padding: 10px 14px; border-radius: 10px; outline: none;
-  }
 
   /* ── Table ── */
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow-x: auto; }
@@ -136,22 +132,29 @@
   .actions { display: flex; gap: 6px; }
   .action-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text); }
 
-  /* ── تحسين واجهة الكاميرا ── */
+  /* ── صندوق الكاميرا المستقر ── */
   .scanner-viewport-wrapper {
-    position: relative; width: 100%; max-width: 480px; margin: 0 auto;
-    border-radius: 16px; overflow: hidden; border: 3px solid var(--border); background: #000;
+    position: relative; width: 100%; max-width: 480px; margin: 15px auto;
+    border-radius: 14px; overflow: hidden; border: 2px dashed var(--border); background: #13151f;
+    padding: 10px;
   }
-  .laser-line {
-    position: absolute; top: 50%; left: 5%; width: 90%; height: 2px;
-    background-color: var(--red); box-shadow: 0 0 8px var(--red);
-    z-index: 10; transform: translateY(-50%); animation: laserPulse 1.5s infinite;
-    pointer-events: none; display: none;
+  
+  /* تعديل أزرار المكتبة الداخلية لتتناسب مع التصميم الداكن */
+  #interactive-reader button {
+    background: var(--accent) !important; color: #111 !important;
+    border: none !important; padding: 8px 16px !important;
+    font-family: var(--font) !important; font-weight: bold !important;
+    border-radius: 6px !important; cursor: pointer !important; margin: 10px 0 !important;
   }
-  @keyframes laserPulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+  #interactive-reader select {
+    background: var(--surface2) !important; color: var(--text) !important;
+    border: 1px solid var(--border) !important; padding: 6px !important;
+    border-radius: 6px !important; font-family: var(--font) !important;
+  }
 
   #scan-status-text {
     text-align: center; font-weight: bold; padding: 12px; margin-top: 10px;
-    border-radius: 8px; font-size: 15px; transition: all 0.3s;
+    border-radius: 8px; font-size: 14px; background: var(--surface2); color: var(--text);
   }
 
   /* ── Modal ── */
@@ -204,7 +207,7 @@
     <div class="nav-item" onclick="showPage('stock')"><span class="icon">📊</span> المخزن</div>
     <div class="nav-item" onclick="showPage('invoices')"><span class="icon">🧾</span> الفواتير</div>
   </nav>
-  <div class="sidebar-footer">مخزني v1.5 · 2026</div>
+  <div class="sidebar-footer">مخزني v1.6 · 2026</div>
 </aside>
 
 <!-- ══ MAIN CONTENT ══ -->
@@ -246,17 +249,13 @@
     <div class="topbar"><div class="page-title">تتبع المخزن <span>والكاميرا</span></div></div>
     
     <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div style="font-weight: 700; color: var(--accent);">📷 ماسح الباركود السريع المطور للمنتجات</div>
-        <button class="btn btn-primary" id="btn-toggle-scanner" onclick="toggleScanner()">تشغيل كاميرا الهاتف</button>
-      </div>
+      <div style="font-weight: 700; color: var(--accent); margin-bottom: 10px;">📷 ماسح الباركود الآمن والمستقر للموبايل</div>
       
-      <!-- إطار عارض الكاميرا المعدل للموبايل -->
-      <div class="scanner-viewport-wrapper" id="scanner-wrapper" style="display: none;">
-        <div class="laser-line" id="laser-guideline"></div>
+      <!-- الصندوق أصبح ظاهراً ومستقراً ومبنياً بواسطة المكتبة مباشرة بشكل آمن -->
+      <div class="scanner-viewport-wrapper">
         <div id="interactive-reader" style="width: 100%;"></div>
       </div>
-      <div id="scan-status-text" style="display: none;">جاري الاستعداد...</div>
+      <div id="scan-status-text">🎯 اضغط على زر تشغيل الكاميرا بالداخل لبدء المسح السريع</div>
     </div>
 
     <div class="table-wrap">
@@ -318,7 +317,6 @@ let invoices = JSON.parse(localStorage.getItem('makhzani_invoices') || '[]');
 let editingId = null;
 let invoiceItems = [];
 let html5QrcodeScanner = null;
-let isScannerOpen = false;
 let canScanNow = true;
 
 function save() {
@@ -348,8 +346,6 @@ function showPage(page) {
   if(page === 'invoices') navs[3].classList.add('active');
 
   document.getElementById('sidebar-menu').classList.remove('open');
-  
-  if (page !== 'stock' && isScannerOpen) { toggleScanner(); }
   
   renderTables();
   if(page === 'invoices') { renderInvoiceItems(); renderInvoiceHistory(); }
@@ -466,71 +462,26 @@ function saveProduct() {
 
 function deleteProduct(id) { if(confirm('هل أنت متأكد من الحذف؟')) { products=products.filter(p=>p.id!==id); save(); renderTables(); } }
 
-function toggleScanner() {
-  const wrapper = document.getElementById('scanner-wrapper');
-  const btn = document.getElementById('btn-toggle-scanner');
-  const statusText = document.getElementById('scan-status-text');
-  const laser = document.getElementById('laser-guideline');
-
-  if (isScannerOpen) {
-    if (html5QrcodeScanner) {
-      html5QrcodeScanner.stop().then(() => {
-        wrapper.style.display = 'none';
-        laser.style.display = 'none';
-        statusText.style.display = 'none';
-        btn.textContent = 'تشغيل كاميرا الهاتف';
-        btn.style.background = 'var(--accent)';
-        isScannerOpen = false;
-      }).catch(err => console.error("خطأ في إيقاف الكاميرا", err));
-    }
-  } else {
-    wrapper.style.display = 'block';
-    statusText.style.display = 'block';
-    statusText.textContent = '🔍 جاري تشغيل الكاميرا الخلفية وتفعيل التركيز التلقائي...';
-    statusText.style.background = 'var(--surface2)';
-    statusText.style.color = 'var(--text)'; // تم إصلاح الخطأ هنا لإزالة الفريز تماماً
-    btn.textContent = 'إيقاف الكاميرا ✕';
-    btn.style.background = 'var(--red)';
-    isScannerOpen = true;
-
-    html5QrcodeScanner = new Html5Qrcode("interactive-reader");
-    
-    const scanConfig = {
-      fps: 20,
-      qrbox: function(viewfinderWidth, viewfinderHeight) {
-        const width = Math.min(viewfinderWidth * 0.85, 380);
-        const height = Math.min(viewfinderHeight * 0.35, 140);
-        return { width: width, height: height };
-      },
-      aspectRatio: 1.0
-    };
-
-    html5QrcodeScanner.start(
-      { facingMode: "environment" }, 
-      scanConfig, 
-      onScanSuccess, 
-      onScanFailure
-    ).then(() => {
-      laser.style.display = 'block';
-      statusText.textContent = '🎯 وجه الخط الأحمر نحو باركود المنتج مباشرة';
-    }).catch(err => {
-      console.error(err);
-      alert("عذراً، لم نتمكن من الوصول للكاميرا. تأكد من فتح الرابط ببروتوكول آمن https:// ومنح المتصفح صلاحية الكاميرا.");
-      wrapper.style.display = 'none';
-      statusText.style.display = 'none';
-      btn.textContent = 'تشغيل كاميرا الهاتف';
-      isScannerOpen = false;
-    });
-  }
+// ══ نظام تهيئة الماسح المستقر التلقائي ══
+function initStableScanner() {
+  // استخدام المحاكي الرسمي الحاصل على أعلى استقرار في المتصفحات لمنع الفريز تماماً
+  html5QrcodeScanner = new Html5QrcodeScanner("interactive-reader", { 
+    fps: 15, 
+    qrbox: { width: 320, height: 140 }, // مستطيل مخصص لباركود علب المنتجات الحقيقية
+    aspectRatio: 1.0,
+    rememberLastUsedCamera: true
+  }, false);
+  
+  html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 }
 
 function onScanSuccess(decodedText) {
   if (!canScanNow) return;
-
+  
   const barcode = decodedText.trim();
   if (!barcode) return;
 
-  canScanNow = false;
+  canScanNow = false; // قفل لمنع التكرار الفوري والخصم المتعدد بالخطأ
   
   const statusText = document.getElementById('scan-status-text');
   const product = products.find(p => p.barcode === barcode);
@@ -542,27 +493,26 @@ function onScanSuccess(decodedText) {
       renderTables();
       playBeepSound();
       
-      statusText.textContent = `✔ تم بنجاح: خصم قطعة من (${product.name}). الكمية المتبقية: ${product.qty}`;
+      statusText.textContent = `✔ تم بنجاح: خصم قطعة من (${product.name}). المتبقي: ${product.qty}`;
       statusText.style.background = 'rgba(46,204,113,0.2)';
       statusText.style.color = 'var(--green)';
     } else {
-      statusText.textContent = `⚠️ منتج مسجل (${product.name}) ولكن الكمية الحالية في مخزنك 0!`;
+      statusText.textContent = `⚠️ المنتج (${product.name}) مسجل ولكن كميته الحالية بالمخزن 0!`;
       statusText.style.background = 'rgba(231,76,60,0.2)';
       statusText.style.color = 'var(--red)';
     }
   } else {
-    statusText.textContent = `❌ باركود غير مسجل رقم: [ ${barcode} ] . يمكنك إضافته من صفحة المنتجات.`;
+    statusText.textContent = `❌ باركود غير مسجل رقم: [ ${barcode} ] . قم بنسخه وإضافته يدوياً للمنتج.`;
     statusText.style.background = 'rgba(245,166,35,0.2)';
     statusText.style.color = 'var(--accent)';
   }
 
+  // إعادة التنشيط بعد ثانيتين للسماح للمستخدم بإبعاد الهاتف والمنتج
   setTimeout(() => {
     canScanNow = true;
-    if (isScannerOpen) {
-      statusText.textContent = '🎯 وجه الخط الأحمر نحو باركود منتج آخر...';
-      statusText.style.background = 'var(--surface2)';
-      statusText.style.color = 'var(--text)';
-    }
+    statusText.textContent = '🎯 وجه الكاميرا نحو باركود منتج آخر...';
+    statusText.style.background = 'var(--surface2)';
+    statusText.style.color = 'var(--text)';
   }, 2000);
 }
 
@@ -577,7 +527,7 @@ function playBeepSound() {
     oscillator.connect(audioCtx.destination);
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + 0.09);
-  } catch(e) { console.log("الصوت غير مدعوم"); }
+  } catch(e) {}
 }
 
 function addInvoiceItem() { if(products.length > 0) { invoiceItems.push({ productId: products[0].id, qty: 1 }); renderInvoiceItems(); } }
@@ -630,7 +580,10 @@ function renderInvoiceHistory() {
   `).join('');
 }
 
-document.addEventListener("DOMContentLoaded", renderTables);
+document.addEventListener("DOMContentLoaded", () => {
+  renderTables();
+  initStableScanner(); // تشغيل أوتوماتيكي آمن عند التحميل للوقاية من التجمد
+});
 </script>
 </body>
 </html>
