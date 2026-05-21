@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -136,12 +136,11 @@
   .actions { display: flex; gap: 6px; }
   .action-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; color: var(--text); }
 
-  /* ── المطور: تحسين واجهة الكاميرا ── */
+  /* ── تحسين واجهة الكاميرا ── */
   .scanner-viewport-wrapper {
     position: relative; width: 100%; max-width: 480px; margin: 0 auto;
     border-radius: 16px; overflow: hidden; border: 3px solid var(--border); background: #000;
   }
-  /* محاكاة خط الليزر الأحمر للمنتجات */
   .laser-line {
     position: absolute; top: 50%; left: 5%; width: 90%; height: 2px;
     background-color: var(--red); box-shadow: 0 0 8px var(--red);
@@ -320,14 +319,13 @@ let editingId = null;
 let invoiceItems = [];
 let html5QrcodeScanner = null;
 let isScannerOpen = false;
-let canScanNow = true; // متغير للتحكم في قفل الفحص لمنع التكرار
+let canScanNow = true;
 
 function save() {
   localStorage.setItem('makhzani_products', JSON.stringify(products));
   localStorage.setItem('makhzani_invoices', JSON.stringify(invoices));
 }
 
-// إنشاء منتجات افتراضية مجهزة بأكواد حقيقية للتجربة في المرة الأولى
 if (products.length === 0) {
   products = [
     { id: 1, name: 'هاتف سامسونج A54', cat: 'إلكترونيات', buy: 35000, sell: 42000, qty: 12, min: 3, barcode: '8806095000000' },
@@ -343,7 +341,6 @@ function showPage(page) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
   
-  // تفعيل النقر الصحيح في القائمة الجانبية
   const navs = document.querySelectorAll('.nav-item');
   if(page === 'dashboard') navs[0].classList.add('active');
   if(page === 'products') navs[1].classList.add('active');
@@ -352,7 +349,6 @@ function showPage(page) {
 
   document.getElementById('sidebar-menu').classList.remove('open');
   
-  // إيقاف الكاميرا فوراً إذا غادر المستخدم صفحة المخزن للحفاظ على البطارية وموارد الهاتف
   if (page !== 'stock' && isScannerOpen) { toggleScanner(); }
   
   renderTables();
@@ -470,7 +466,6 @@ function saveProduct() {
 
 function deleteProduct(id) { if(confirm('هل أنت متأكد من الحذف؟')) { products=products.filter(p=>p.id!==id); save(); renderTables(); } }
 
-// ══🛠️ تعديل نظام كاميرا الهاتف وقارئ الباركود (الإصدار المحسن) ══
 function toggleScanner() {
   const wrapper = document.getElementById('scanner-wrapper');
   const btn = document.getElementById('btn-toggle-scanner');
@@ -478,7 +473,6 @@ function toggleScanner() {
   const laser = document.getElementById('laser-guideline');
 
   if (isScannerOpen) {
-    // إيقاف الكاميرا وتنظيف الذاكرة
     if (html5QrcodeScanner) {
       html5QrcodeScanner.stop().then(() => {
         wrapper.style.display = 'none';
@@ -490,23 +484,20 @@ function toggleScanner() {
       }).catch(err => console.error("خطأ في إيقاف الكاميرا", err));
     }
   } else {
-    // تشغيل الكاميرا بإعدادات مخصصة جداً للهواتف والمنتجات الطولية
     wrapper.style.display = 'block';
     statusText.style.display = 'block';
     statusText.textContent = '🔍 جاري تشغيل الكاميرا الخلفية وتفعيل التركيز التلقائي...';
     statusText.style.background = 'var(--surface2)';
-    statusText.style.color = var(--text);
+    statusText.style.color = 'var(--text)'; // تم إصلاح الخطأ هنا لإزالة الفريز تماماً
     btn.textContent = 'إيقاف الكاميرا ✕';
     btn.style.background = 'var(--red)';
     isScannerOpen = true;
 
     html5QrcodeScanner = new Html5Qrcode("interactive-reader");
     
-    // إعدادات المسح المحسنة للمنتجات
     const scanConfig = {
-      fps: 20, // زيادة سرعة القراءة والمعالجة في الثانية لعدم حدوث تعليق
+      fps: 20,
       qrbox: function(viewfinderWidth, viewfinderHeight) {
-        // جعل صندوق الفحص مستطيل أفقي عريض (مناسب تماماً للباركود الطولي في علب المنتجات بدلاً من المربع المخصص للـ QR)
         const width = Math.min(viewfinderWidth * 0.85, 380);
         const height = Math.min(viewfinderHeight * 0.35, 140);
         return { width: width, height: height };
@@ -514,14 +505,13 @@ function toggleScanner() {
       aspectRatio: 1.0
     };
 
-    // بدء بث الكاميرا الخلفية بشكل إجباري (environment)
     html5QrcodeScanner.start(
       { facingMode: "environment" }, 
       scanConfig, 
       onScanSuccess, 
       onScanFailure
     ).then(() => {
-      laser.style.display = 'block'; // إظهار خط مساعدة ليزر أحمر
+      laser.style.display = 'block';
       statusText.textContent = '🎯 وجه الخط الأحمر نحو باركود المنتج مباشرة';
     }).catch(err => {
       console.error(err);
@@ -535,13 +525,11 @@ function toggleScanner() {
 }
 
 function onScanSuccess(decodedText) {
-  // إذا كان النظام مغلقاً مؤقتاً بسبب قراءة ناجحة سابقة، يتم تجاهل القراءة الحالية
   if (!canScanNow) return;
 
   const barcode = decodedText.trim();
   if (!barcode) return;
 
-  // إغلاق ميزة المسح فوراً لمدة ثانيتين (منع الخصم المتعدد التلقائي)
   canScanNow = false;
   
   const statusText = document.getElementById('scan-status-text');
@@ -549,10 +537,10 @@ function onScanSuccess(decodedText) {
 
   if (product) {
     if (product.qty > 0) {
-      product.qty -= 1; // خصم قطعة واحدة
+      product.qty -= 1;
       save();
       renderTables();
-      playBeepSound(); // إصدار صوت Beep إلكتروني لتأكيد النجاح للتاجر
+      playBeepSound();
       
       statusText.textContent = `✔ تم بنجاح: خصم قطعة من (${product.name}). الكمية المتبقية: ${product.qty}`;
       statusText.style.background = 'rgba(46,204,113,0.2)';
@@ -563,13 +551,11 @@ function onScanSuccess(decodedText) {
       statusText.style.color = 'var(--red)';
     }
   } else {
-    // كود ممسوح غير مسجل في قاعدة البيانات المحلية
     statusText.textContent = `❌ باركود غير مسجل رقم: [ ${barcode} ] . يمكنك إضافته من صفحة المنتجات.`;
     statusText.style.background = 'rgba(245,166,35,0.2)';
     statusText.style.color = 'var(--accent)';
   }
 
-  // إعادة تفعيل القارئ مجدداً بعد مرور ثانيتين كاملتين لمنح المستخدم فرصة إبعاد المنتج عن الكاميرا
   setTimeout(() => {
     canScanNow = true;
     if (isScannerOpen) {
@@ -580,23 +566,20 @@ function onScanSuccess(decodedText) {
   }, 2000);
 }
 
-function onScanFailure(error) {
-  // دالة فارغة لتجنب امتلاء سجل المطورين (Console) بالأخطاء أثناء الحركة الطبيعية للكاميرا
-}
+function onScanFailure(error) {}
 
 function playBeepSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(950, audioCtx.currentTime); // تردد الصوت ليكون Beep نقي وحاد
+    oscillator.frequency.setValueAtTime(950, audioCtx.currentTime);
     oscillator.connect(audioCtx.destination);
     oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.09); // مدة الصوت 90 جزء من الثانية فقط
-  } catch(e) { console.log("الصوت غير مدعوم في المتصفح الحالي حتى يتفاعل المستخدم"); }
+    oscillator.stop(audioCtx.currentTime + 0.09);
+  } catch(e) { console.log("الصوت غير مدعوم"); }
 }
 
-// الفواتير
 function addInvoiceItem() { if(products.length > 0) { invoiceItems.push({ productId: products[0].id, qty: 1 }); renderInvoiceItems(); } }
 function renderInvoiceItems() {
   const container = document.getElementById('invoice-items');
